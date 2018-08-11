@@ -1,5 +1,6 @@
 package com.sgglabs.retail;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,6 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.io.File;
+import java.io.FileWriter;
 
 /**
  * @Author: Sankarganesh Gandhi (sgandhi@sgglabs.com)
@@ -20,10 +24,16 @@ public class Application {
         SpringApplication.run(Application.class, args);
 
         try {
-            Document doc = Jsoup.connect("https://www.google" +
+            /*Document doc = Jsoup.connect("https://www.google" +
                     ".com/search?q=men+shampoo&hl=en-GB&source=lnms&tbm=shop&sa=X").get();
 
+            final File htmlFile = new File("/home/sankarg/temp/filename.html");
+            FileWriter writer  = new FileWriter(htmlFile);
+            writer.write(doc.outerHtml());*/
+
             /*
+             * <div class="ZGFjDb">
+             * <div>
              * <div class="eIuuYe"..../> contains the product name
              * This is the root of the google search list
              *
@@ -37,7 +47,7 @@ public class Application {
              * <div class="na4ICd TxCHDf"...>
              *     <div class="mQ35Be"....>
              *         <div>
-             *             <span class="O8U6h"></span>
+             *             <span class="O8U6h">{price}</span>
              *             some description
              *         </div>
              *     </div>
@@ -78,13 +88,60 @@ public class Application {
              *         <span class="dGWXMb">(Price 2)</span>
              *     </a>
              * </div>
+             * </div>
+             * </div>
              */
-            Elements parentDivTags = doc.getElementsByAttributeValue("class", "eIuuYe");
-            for (Element parentDivTag : parentDivTags) {
-                String linkHref = parentDivTags.attr("href");
-                String linkText = parentDivTags.text();
-                LOG.debug("linkText:- " + linkText);
+
+            File input = new File("/home/sankarg/temp/filename.html");
+            Document doc = Jsoup.parse(input, "UTF-8");
+
+            Elements divProductResultTags = doc.select("div.ZGFjDb");
+            //for (Element prodResultTag : divProductResultTags) {
+            Element prodResultTag = divProductResultTags.first();
+                Elements childTags = prodResultTag.children();
+                Elements productNameTags = childTags.select("div.eIuuYe");
+                for (Element divTag : productNameTags) {
+                    String linkText = divTag.text();
+                    LOG.debug("Product Text:- " + linkText);
+                }
+
+                //For Price
+                Elements productPriceTags = childTags.select("div.mQ35Be");
+                for (Element divTag : productPriceTags) {
+                    String linkText = divTag.text();
+                    LOG.debug("Price Text:- " + linkText);
+                }
+            //}
+            /*
+            //For Product name
+            Elements tagsForProdResult = doc.getElementsByAttributeValue("class", "eIuuYe");
+            for (Element divTag : tagsForProdResult) {
+                String linkHref = divTag.attr("href");
+                String linkText = divTag.text();
+                LOG.debug("Product Text:- " + linkText);
             }
+
+            //For Product price
+            Elements tagsForPrice = doc.getElementsByAttributeValue("class", "O8U6h");
+            for (Element spanTag : tagsForPrice) {
+                String linkText = spanTag.text();
+                LOG.debug("Price Text:- " + linkText);
+            }
+
+            //For Product Description
+            Elements tagsForProdDescription = doc.getElementsByAttributeValue("class", "na4ICd");
+            for (Element divTag : tagsForProdDescription) {
+                String linkText = divTag.text();
+                LOG.debug("Description Text:- " + linkText);
+            }
+
+            //For other options
+            Elements tagsForOtherOptions = doc.getElementsByAttributeValue("class", "na4ICd UTJALc");
+            for (Element divTag : tagsForOtherOptions) {
+                String linkText = divTag.text();
+                LOG.debug("Other Options Text:- " + linkText);
+            }
+            */
         } catch (Exception ex) {
             LOG.error("unable to fetch data", ex);
         }
