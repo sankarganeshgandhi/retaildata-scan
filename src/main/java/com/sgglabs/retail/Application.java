@@ -25,6 +25,7 @@ public class Application {
         SpringApplication.run(Application.class, args);
 
         try {
+
             Document doc = Jsoup.connect("https://www.google.co.uk" +
                     "/search?q=men+shampoo&hl=en-GB&source=lnms&tbm=shop&sa=X").get();
 
