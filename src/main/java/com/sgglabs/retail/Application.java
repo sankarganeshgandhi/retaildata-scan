@@ -2,6 +2,7 @@ package com.sgglabs.retail;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -95,55 +96,86 @@ public class Application {
             File input = new File("/home/sankarg/temp/filename.html");
             Document doc = Jsoup.parse(input, "UTF-8");
 
-            Elements divProductResultTags = doc.select("div.ZGFjDb");
+            /*Elements rootDivTag = doc.select("div.sh-sr__shop-result-group");
+            Elements divProductResultTags = rootDivTag.select("div.sh-pr__product-results")
+                    .select("div.sh-dlr__list-result").select("div.sh-dlr__content")
+                    .select("div.ZGFjDb");*/
+            Elements divProductResultTags = doc.select("div.sh-pr__product-results")
+                .select("div.sh-dlr__list-result").select("div.sh-dlr__content")
+                .select("div.ZGFjDb");
             //for (Element prodResultTag : divProductResultTags) {
             Element prodResultTag = divProductResultTags.first();
+                // For Product short description
                 Elements childTags = prodResultTag.children();
                 Elements productNameTags = childTags.select("div.eIuuYe");
                 for (Element divTag : productNameTags) {
                     String linkText = divTag.text();
-                    LOG.debug("Product Text:- " + linkText);
+                    LOG.debug("Product Short Description Text:- " + linkText);
                 }
 
-                //For Price
-                Elements productPriceTags = childTags.select("div.mQ35Be");
-                for (Element divTag : productPriceTags) {
-                    String linkText = divTag.text();
-                    LOG.debug("Price Text:- " + linkText);
-                }
+                //For Product Price
+                Elements na4IcdDivTags = childTags.select("div.na4ICd");
+                Element productPriceTag = na4IcdDivTags.first();
+                String linkText = productPriceTag.text();
+                LOG.debug("Prod Price Text:- " + linkText);
+
+                //For Product Reviews and Ratings
+                Elements divTags = na4IcdDivTags.next();
+                Element productReviewTag = divTags.first();
+                linkText = productReviewTag.text();
+                LOG.debug("Prod Review Text:- " + linkText);
+
+                Elements spanRatingTags = productReviewTag.select("span.o0Xcvc");
+                Elements divRatingTags = spanRatingTags.select("div.vq3ore");
+                Element divRatingTag = divRatingTags.first();
+                Attributes attributes= divRatingTag.attributes();
+                LOG.debug("Product Rating Text:- " + attributes.get("aria-label"));
+
+                //For Product long description
+                divTags = na4IcdDivTags.next().next();
+                Element prodLongDescTag = divTags.first();
+                linkText = prodLongDescTag.text();
+                LOG.debug("Long Description Text:- " + linkText);
+
+                // For Product Categories
+                divTags = na4IcdDivTags.next().next().next();
+                Element prodCategoriesTag = divTags.first();
+                linkText = prodCategoriesTag.text();
+                LOG.debug("Product Categories Text:- " + linkText);
+
+                // For Product Other Options
+                divTags = na4IcdDivTags.next().next().next().next();
+                Element prodOtherOptionsTag = divTags.first();
+                linkText = prodOtherOptionsTag.text();
+                LOG.debug("Product Categories Text:- " + linkText);
+
+                // For Other Product Price and Retail Store
+                /*Elements tableRowTags = childTags.select("div._-c2").select("table._-c4").select("tr");
+                for (int i = 0; i < tableRowTags.size(); i++) { //first row is the col names so skip it.
+                    Element row = tableRowTags.get(i);
+                    Elements cols = row.select("td");
+                    LOG.debug("Price: "+ cols.get(0).text() + " Retail Store: " + cols.get(0).text());
+                }*/
             //}
-            /*
-            //For Product name
-            Elements tagsForProdResult = doc.getElementsByAttributeValue("class", "eIuuYe");
-            for (Element divTag : tagsForProdResult) {
-                String linkHref = divTag.attr("href");
-                String linkText = divTag.text();
-                LOG.debug("Product Text:- " + linkText);
-            }
-
-            //For Product price
-            Elements tagsForPrice = doc.getElementsByAttributeValue("class", "O8U6h");
-            for (Element spanTag : tagsForPrice) {
-                String linkText = spanTag.text();
-                LOG.debug("Price Text:- " + linkText);
-            }
-
-            //For Product Description
-            Elements tagsForProdDescription = doc.getElementsByAttributeValue("class", "na4ICd");
-            for (Element divTag : tagsForProdDescription) {
-                String linkText = divTag.text();
-                LOG.debug("Description Text:- " + linkText);
-            }
-
-            //For other options
-            Elements tagsForOtherOptions = doc.getElementsByAttributeValue("class", "na4ICd UTJALc");
-            for (Element divTag : tagsForOtherOptions) {
-                String linkText = divTag.text();
-                LOG.debug("Other Options Text:- " + linkText);
-            }
-            */
         } catch (Exception ex) {
             LOG.error("unable to fetch data", ex);
         }
     }
 }
+/*Elements productPriceTags = childTags.select("div.mQ35Be");
+                for (Element divTag : productPriceTags) {
+                    String linkText = divTag.text();
+                    LOG.debug("Price Text:- " + linkText);
+                }*/
+
+// For Product Reviews and Ratings
+                /*Elements productReviewTags = childTags.select("div.eWxN4b");
+                for (Element divReviewTextTag : productReviewTags) {
+                    String linkText = divReviewTextTag.text();
+                    LOG.debug("Reviews Text:- " + linkText);
+                    Elements spanRatingTags = divReviewTextTag.select("span.o0Xcvc");
+                    Elements divRatingTags = spanRatingTags.select("div.vq3ore");
+                    Element divRatingTag = divRatingTags.first();
+                    Attributes attributes= divRatingTag.attributes();
+                    LOG.debug("Rating Text:-" + attributes.get("aria-label"));
+                }*/
