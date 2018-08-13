@@ -1,7 +1,6 @@
 package com.sgglabs.retail;
 
-import com.sgglabs.retail.model.SearchText;
-import com.sgglabs.retail.model.Site;
+import com.sgglabs.retail.model.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,42 +22,92 @@ import java.util.List;
 public class RetailDataScanner {
     private static final Logger LOG = LoggerFactory.getLogger(RetailDataScanner.class);
 
+    private class SearchInfo {
+        private String hostName;
+        private String siteName;
+        private String searchText;
+        private String searchURI;
+        private String fullURL;
+
+        public String getSiteName() {
+            return siteName;
+        }
+
+        public void setSiteName(String siteName) {
+            this.siteName = siteName;
+        }
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public void setHostName(String hostName) {
+            this.hostName = hostName;
+        }
+
+        public String getSearchText() {
+            return searchText;
+        }
+
+        public void setSearchText(String searchText) {
+            this.searchText = searchText;
+        }
+
+        public String getSearchURI() {
+            return searchURI;
+        }
+
+        public void setSearchURI(String searchURI) {
+            this.searchURI = searchURI;
+        }
+
+        public String getFullURL() {
+            return fullURL;
+        }
+
+        public void setFullURL(String fullURL) {
+            this.fullURL = fullURL;
+        }
+
+        @Override
+        public String toString() {
+            return "SearchInfo{" +
+                    "hostName='" + hostName + '\'' +
+                    ", searchText='" + searchText + '\'' +
+                    ", searchURI='" + searchURI + '\'' +
+                    ", fullURL='" + fullURL + '\'' +
+                    '}';
+        }
+    }
+
     @Autowired
     private SearchTextRepository searchTextRepo;
 
     @Autowired
     private SiteRepository siteRepo;
 
+    @Autowired
+    private ProductSearchResultRepository prodSearchResultRepo;
+
+    @Autowired
+    private SellerProductDataRepository sellerDataRepo;
+
     public RetailDataScanner() {
     }
 
     public void startScanning() {
-        List<String> urlList = getURLList();
-        LOG.debug(urlList.toString());
-
-        //fetchRetailData(urlList);
+        List<SearchInfo> searchList = getSearchList();
+        fetchRetailData(searchList);
     }
 
-    private void fetchRetailData(List<String> urlList) {
+    private void fetchRetailData(List<SearchInfo> searchList) {
         try {
-            Document tempDoc = Jsoup.connect("https://www.google.co.uk" +
-                    "/search?q=men+shampoo&hl=en-GB&source=lnms&tbm=shop&sa=X").get();
-            final File htmlFile = new File("/home/sankarg/temp/product-results-page.html");
-            FileWriter writer  = new FileWriter(htmlFile);
-            writer.write(tempDoc.outerHtml());
+            SearchInfo searchInfo = searchList.get(0);
+            Document resultPageDoc = Jsoup.connect(searchInfo.getFullURL()).get();
 
-            Document tempSubDoc = Jsoup.connect("https://www.google.co.uk/shopping/" +
-                    "product/16913124049773335120?q=men+shampoo&biw=1009&bih=647&" +
-                    "prds=paur:ClkAsKraX2834tta3SMenZcR0sLYpHR1v9QTrvDvVAAUTv-P8gU8NTja5YVOwKchMEmkBfubJC5U4gUG-" +
-                    "tep-utT20YGKxSR-PNXUkH2AqiNsL08qg1lEF-b2BIZAFPVH72NBcT4b0xeEB5kCrrPRaUSELx9rA&" +
-                    "sa=X&ved=0ahUKEwjtq8Gr_-fcAhUlJsAKHStYDqEQ8wIIhgQ").get();
-
-            final File prodPageHtmlFile = new File("/home/sankarg/temp/product-page.html");
-            FileWriter prodPageFileWriter  = new FileWriter(prodPageHtmlFile);
-            prodPageFileWriter.write(tempSubDoc.outerHtml());
-
-            File input = new File("/home/sankarg/temp/product-results-page.html");
-            Document doc = Jsoup.parse(input, "UTF-8");
+            ProductSearchResult productResult = new ProductSearchResult();
+            productResult.setSiteName(searchInfo.getSiteName());
+            productResult.setSearchText(searchInfo.getSearchText());
 
             /*
              * div.sh-sr__shop-result-group
@@ -67,7 +117,7 @@ public class RetailDataScanner {
              *                  div.ZGFjDb
              */
             // ("div.sh-sr__shop-result-group").("div.sh-pr__product-results")
-            Elements prodSearchResultsTag = doc.select("div.sh-sr__shop-result-group")
+            Elements prodSearchResultsTag = resultPageDoc.select("div.sh-sr__shop-result-group")
                     .select("div.sh-pr__product-results");
 
             // ("div.sh-dlr__list-result")
@@ -82,46 +132,40 @@ public class RetailDataScanner {
             // For Product short description
             Elements productNameTags = divProductResultTags.select("div.eIuuYe");
             String aHrefValue = productNameTags.select("a").attr("href");
-            LOG.debug("Href: " + aHrefValue);
+
             Element productNameTag = productNameTags.first();
-            LOG.debug("Prod Short Description Text:- " + productNameTag.text());
+            productResult.setShortDescription(productNameTag.text());
 
             //For Product Price
-            //Elements na4IcdDivTags = childTags.select("div.na4ICd");
             Elements na4IcdDivTags = prodSearchResultsTag.select("div.na4ICd");
             Element productPriceTag = na4IcdDivTags.first();
-            String linkText = productPriceTag.text();
-            LOG.debug("Prod Price Text:- " + linkText);
+            productResult.setPrice(productPriceTag.text());
 
             //For Product Reviews and Ratings
             Elements divTags = na4IcdDivTags.next();
             Element productReviewTag = divTags.first();
-            linkText = productReviewTag.text();
-            LOG.debug("Prod Review Text:- " + linkText);
+            productResult.setNumberOfReviews(productReviewTag.text());
 
             Elements spanRatingTags = productReviewTag.select("span.o0Xcvc");
             Elements divRatingTags = spanRatingTags.select("div.vq3ore");
             Element divRatingTag = divRatingTags.first();
             Attributes attributes = divRatingTag.attributes();
-            LOG.debug("Product Rating Text:- " + attributes.get("aria-label"));
+            productResult.setRating(attributes.get("aria-label"));
 
             //For Product long description
             divTags = na4IcdDivTags.next().next();
             Element prodLongDescTag = divTags.first();
-            linkText = prodLongDescTag.text();
-            LOG.debug("Long Description Text:- " + linkText);
+            productResult.setLongDescription(prodLongDescTag.text());
 
             // For Product Categories
             divTags = na4IcdDivTags.next().next().next();
             Element prodCategoriesTag = divTags.first();
-            linkText = prodCategoriesTag.text();
-            LOG.debug("Product Categories Text:- " + linkText);
+            productResult.setCategories(prodCategoriesTag.text());
 
             // For Product Other Options
             divTags = na4IcdDivTags.next().next().next().next();
             Element prodOtherOptionsTag = divTags.first();
-            linkText = prodOtherOptionsTag.text();
-            LOG.debug("Product Categories Text:- " + linkText);
+            productResult.setOtherOptions(prodOtherOptionsTag.text());
 
             /*
              * div.id: main-content-with-search
@@ -140,26 +184,17 @@ public class RetailDataScanner {
              *                                  td
              *
              */
+
+            //productResult.getSellerList().addAll(sellerDataList);
+            productResult.setStatusId(StatusEnum.Active.getValue());
+            LOG.debug("Total Product Data: " + productResult.toString());
+            prodSearchResultRepo.save(productResult);
+
             // After clicking on the result URI
-            Document subPageDoc = Jsoup.connect("https://www.google.co.uk" + aHrefValue).get();
-
-            /*File prodInput = new File("/home/sankarg/temp/product-page.html");
-            Document subPageDoc = Jsoup.parse(prodInput, "UTF-8");*/
-
-            Elements productRetailStoreTableRowTags = subPageDoc.getElementById("main-content-with-search")
-                    .getElementById("pp-main")
-                    .getElementById("online").getElementById("os-content")
-                    .getElementById("os-sellers-content")
-                    .select("table.os-main-table")
-                    .select("tbody")
-                    .select("tr");
-
-            for (int i = 1; i < productRetailStoreTableRowTags.size(); i++) { //first row is the col names so skip it.
-                Element row = productRetailStoreTableRowTags.get(i);
-                Elements cols = row.children();
-                LOG.debug("Seller: " + cols.get(0).text() + " Seller Rating: " + cols.get(1).text()
-                        + " Details: " + cols.get(2).text() + " Base Price: " + cols.get(3).text()
-                        + " Total Price: " + cols.get(4).text());
+            List<SellerProductData> sellerDataList = getProductSellerData(
+                    searchInfo.getHostName() + aHrefValue, productResult);
+            for (SellerProductData sellerData: sellerDataList) {
+                sellerDataRepo.save(sellerData);
             }
         } catch (Exception ex) {
             LOG.error("unable to fetch data", ex);
@@ -174,17 +209,73 @@ public class RetailDataScanner {
      * Search Text: men+shampoo
      * URL: https://www.google.co.uk/search?q=men+shampoo&hl=en-GB&source=lnms&tbm=shop&sa=X
      */
-    private ArrayList<String> getURLList() {
-        ArrayList<String> urlList = new ArrayList<>();
+    private List<SearchInfo> getSearchList() {
+        List<SearchInfo> searchList = new ArrayList<>();
         for (Site site : siteRepo.findAll()) {
-            MessageFormat urlFormat = new MessageFormat(site.getSiteURL());
-            LOG.debug("Site URL: " + site.getSiteURL());
+            MessageFormat urlFormat = new MessageFormat(site.getSearchURI());
             for (SearchText searchText : searchTextRepo.findAll()) {
-                LOG.debug("Search Text: " + searchText.getSearchText());
-                Object[] searchTextObjectArray = new Object[] {searchText.getSearchText()};
-                urlList.add(urlFormat.format(searchTextObjectArray));
+                Object[] searchTextObjectArray = new Object[]{searchText.getSearchText()};
+                SearchInfo searchInfo = new SearchInfo();
+                searchInfo.setSiteName(site.getSiteName());
+                searchInfo.setHostName(site.getSiteHostName());
+                searchInfo.setSearchText(searchText.getSearchText());
+                String formattedURI = urlFormat.format(searchTextObjectArray);
+                searchInfo.setSearchURI(formattedURI);
+                searchInfo.setFullURL(site.getSiteHostName() + formattedURI);
+                searchList.add(searchInfo);
             }
         }
-        return urlList;
+        return searchList;
+    }
+
+    private void writeToFile(final Document doc, final String fileName) throws IOException {
+        final File htmlFile = new File(fileName);
+        FileWriter writer = new FileWriter(htmlFile);
+        writer.write(doc.outerHtml());
+    }
+
+    private Document getDocumentFromFile(final String fileName) throws IOException {
+        File input = new File(fileName);
+        Document doc = Jsoup.parse(input, "UTF-8");
+        return doc;
+    }
+
+    private Document getDocumentFromURL(final String url) throws IOException {
+        Document doc = Jsoup.connect(url).get();
+        return doc;
+    }
+
+    private List<SellerProductData> getProductSellerData(final String productDetailsPageURL,
+                                    ProductSearchResult productSearchResult) throws IOException {
+        // After clicking on the result URI
+        Document prodDetailPageDoc = Jsoup.connect(productDetailsPageURL).get();
+
+        Elements productRetailStoreTableRowTags = prodDetailPageDoc.getElementById("main-content-with-search")
+                .getElementById("pp-main")
+                .getElementById("online").getElementById("os-content")
+                .getElementById("os-sellers-content")
+                .select("table.os-main-table")
+                .select("tbody")
+                .select("tr");
+
+        List<SellerProductData> sellerProductDataList = new ArrayList<>();
+        for (int i = 1; i < productRetailStoreTableRowTags.size(); i++) { //first row is the col names so skip it.
+            Element row = productRetailStoreTableRowTags.get(i);
+            Elements cols = row.children();
+            if (cols.size() >= 6) {
+                SellerProductData sellerData = new SellerProductData();
+                sellerData.setSellerName(cols.get(0).text());
+                sellerData.setRatingIndex(cols.get(1).text());
+                sellerData.setDetails(cols.get(2).text());
+                sellerData.setBasePrice(cols.get(3).text());
+                sellerData.setTotalPrice(cols.get(4).text());
+                sellerData.setProductSearchResult(productSearchResult);
+                sellerData.setStatusId(StatusEnum.Active.getValue());
+                sellerProductDataList.add(sellerData);
+            } else {
+                LOG.warn("skipped row: " + row.text());
+            }
+        }
+        return sellerProductDataList;
     }
 }

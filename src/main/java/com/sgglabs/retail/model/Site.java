@@ -11,7 +11,8 @@ import java.util.Objects;
  * CREATE TABLE Site(
  *   Id INT(2) NOT NULL AUTO_INCREMENT,
  *   SiteName VARCHAR(30) NOT NULL,
- *   SiteURL VARCHAR(100) NOT NULL,
+ *   SiteHostName VARCHAR(30) NOT NULL,
+ *   SearchURI VARCHAR(500) NOT NULL,
  *   SiteDescription VARCHAR(100),
  *   StatusId INT(2) NOT NULL,
  *   CreatedDate DATE,
@@ -32,8 +33,11 @@ public class Site {
     @Column(name = "SiteName")
     private String siteName;
 
-    @Column(name = "SiteURL")
-    private String siteURL;
+    @Column(name = "SiteHostName")
+    private String siteHostName;
+
+    @Column(name = "SearchURI")
+    private String searchURI;
 
     @Column(name = "SiteDescription")
     private String siteDescription;
@@ -65,12 +69,20 @@ public class Site {
         this.siteName = siteName;
     }
 
-    public String getSiteURL() {
-        return siteURL;
+    public String getSiteHostName() {
+        return siteHostName;
     }
 
-    public void setSiteURL(String siteURL) {
-        this.siteURL = siteURL;
+    public void setSiteHostName(String siteHostName) {
+        this.siteHostName = siteHostName;
+    }
+
+    public String getSearchURI() {
+        return searchURI;
+    }
+
+    public void setSearchURI(String searchURI) {
+        this.searchURI = searchURI;
     }
 
     public String getSiteDescription() {
@@ -113,7 +125,8 @@ public class Site {
         return id == site.id &&
                 statusId == site.statusId &&
                 Objects.equals(siteName, site.siteName) &&
-                Objects.equals(siteURL, site.siteURL) &&
+                Objects.equals(siteHostName, site.siteHostName) &&
+                Objects.equals(searchURI, site.searchURI) &&
                 Objects.equals(siteDescription, site.siteDescription) &&
                 Objects.equals(createdDate, site.createdDate) &&
                 Objects.equals(modifiedDate, site.modifiedDate);
@@ -121,7 +134,8 @@ public class Site {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, siteName, siteURL, siteDescription, statusId, createdDate, modifiedDate);
+        return Objects.hash(id, siteName, siteHostName, searchURI, siteDescription, statusId,
+                createdDate, modifiedDate);
     }
 
     @Override
@@ -129,7 +143,8 @@ public class Site {
         return "Site{" +
                 "id=" + id +
                 ", siteName='" + siteName + '\'' +
-                ", siteURL='" + siteURL + '\'' +
+                ", siteHostName='" + siteHostName + '\'' +
+                ", searchURI='" + searchURI + '\'' +
                 ", siteDescription='" + siteDescription + '\'' +
                 ", statusId=" + statusId +
                 ", createdDate=" + createdDate +
