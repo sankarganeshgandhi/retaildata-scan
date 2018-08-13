@@ -13,7 +13,7 @@ CREATE TABLE Status(
 CREATE TABLE Site(
     Id INT(2) NOT NULL AUTO_INCREMENT,
     SiteName VARCHAR(30) NOT NULL,
-    SiteURL VARCHAR(100) NOT NULL,
+    SiteURL VARCHAR(512) NOT NULL,
     SiteDescription VARCHAR(100),
     StatusId INT(2) NOT NULL,
     CreatedDate DATE,
@@ -34,7 +34,8 @@ CREATE TABLE SearchText(
 
 INSERT INTO Status (Description) VALUES ("Inactive");
 INSERT INTO Status (Description) VALUES ("Active");
-INSERT INTO Site (SiteName, SiteURL, StatusId) VALUES ("Google UK", "http://www.google.co.uk", 2);
+INSERT INTO Site (SiteName, SiteURL, StatusId) VALUES ("Google UK",
+    "https://www.google.co.uk/search?q={0}&hl=en-GB&source=lnms&tbm=shop&sa=X", 2);
 INSERT INTO SearchText (SearchText, StatusId) VALUES ("menu+shampoo", 2);
 
 
