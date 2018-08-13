@@ -1,3 +1,5 @@
+DROP TABLE SellerProductData;
+DROP TABLE ProductSearchResult;
 DROP TABLE SearchText;
 DROP TABLE Site;
 DROP TABLE Status;
@@ -38,9 +40,6 @@ INSERT INTO Status (Description) VALUES ("Active");
 INSERT INTO Site (SiteName, SiteHostName, SearchURI, StatusId) VALUES ("Google UK", "https://www.google.co.uk", "/search?q={0}&hl=en-GB&source=lnms&tbm=shop&sa=X", 2);
 INSERT INTO SearchText (SearchText, StatusId) VALUES ("menu+shampoo", 2);
 
-DROP TABLE SellerProductData;
-DROP TABLE ProductSearchResult;
-
 CREATE TABLE ProductSearchResult(
     Id BIGINT(20) NOT NULL AUTO_INCREMENT,
     SiteName VARCHAR(30) NOT NULL,
@@ -63,10 +62,10 @@ CREATE TABLE ProductSearchResult(
 CREATE TABLE SellerProductData (
     Id BIGINT(20) NOT NULL AUTO_INCREMENT,
     ProdSearchResultId BIGINT(20) NOT NULL,
-    SellerName VARCHAR(30),
-    RatingIndex VARCHAR(30),
-    TotalRatings VARCHAR(20),
-    Details VARCHAR(50),
+    SellerName VARCHAR(150),
+    RatingIndex VARCHAR(100),
+    TotalRatings VARCHAR(100),
+    Details VARCHAR(250),
     BasePrice VARCHAR(150),
     TotalPrice VARCHAR(150),
     StatusId INT(2) NOT NULL DEFAULT 2,

@@ -187,7 +187,6 @@ public class RetailDataScanner {
 
             //productResult.getSellerList().addAll(sellerDataList);
             productResult.setStatusId(StatusEnum.Active.getValue());
-            LOG.debug("Total Product Data: " + productResult.toString());
             prodSearchResultRepo.save(productResult);
 
             // After clicking on the result URI
