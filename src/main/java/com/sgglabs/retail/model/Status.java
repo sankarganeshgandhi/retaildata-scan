@@ -19,7 +19,8 @@ import java.util.Objects;
 @Entity
 @Table(name = "Status")
 public class Status {
-    private static final Logger LOG = LoggerFactory.getLogger(Status.class);
+    private static final String TO_STRING_FORMAT =
+            "Status[id=%s, description='%s', createdDate=%s, modifiedDate=%s]";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -87,11 +88,6 @@ public class Status {
 
     @Override
     public String toString() {
-        return "Status{" +
-                "id=" + id +
-                ", description='" + description + '\'' +
-                ", createdDate=" + createdDate +
-                ", modifiedDate=" + modifiedDate +
-                '}';
+        return String.format(TO_STRING_FORMAT, id, description, createdDate, modifiedDate);
     }
 }

@@ -2,8 +2,6 @@ package com.sgglabs.retail.model;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /*
@@ -28,6 +26,10 @@ import java.util.Objects;
 @Entity
 @Table(name = "ProductSearchResult")
 public class ProductSearchResult {
+    private static final String TO_STRING_FORMAT =
+            "ProductSearchResult[id=%s, siteName='%s', searchText='%s', shortDesc='%s', longDesc='%s', price='%s'" +
+                    "unit='%s', reviews='%s', ratings='%s', otherOptions='%s', prodCategories='%s'" +
+                    "statusId=%s, createdDate=%s, modifiedDate=%s]";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -54,7 +56,7 @@ public class ProductSearchResult {
     private String numberOfReviews;
 
     @Column(name = "Ratings")
-    private String rating;
+    private String totalRatings;
 
     @Column(name = "OtherOptions")
     private String otherOptions;
@@ -71,15 +73,7 @@ public class ProductSearchResult {
     @Column(name = "ModifiedDate")
     private LocalDate modifiedDate;
 
-    /*
-    @OneToMany(cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY,
-            mappedBy = "productSearchResult")
-    private List<SellerProductData> sellerList;
-    */
-
     public ProductSearchResult() {
-        //sellerList = new ArrayList<>();
     }
 
     public long getId() {
@@ -146,12 +140,12 @@ public class ProductSearchResult {
         this.numberOfReviews = numberOfReviews;
     }
 
-    public String getRating() {
-        return rating;
+    public String getTotalRatings() {
+        return totalRatings;
     }
 
-    public void setRating(String rating) {
-        this.rating = rating;
+    public void setTotalRatings(String ratings) {
+        this.totalRatings = ratings;
     }
 
     public String getOtherOptions() {
@@ -194,16 +188,6 @@ public class ProductSearchResult {
         this.modifiedDate = modifiedDate;
     }
 
-    /*
-    public List<SellerProductData> getSellerList() {
-        return sellerList;
-    }
-
-    public void setSellerList(List<SellerProductData> sellerList) {
-        this.sellerList = sellerList;
-    }
-    */
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -218,39 +202,23 @@ public class ProductSearchResult {
                 Objects.equals(price, that.price) &&
                 Objects.equals(unit, that.unit) &&
                 Objects.equals(numberOfReviews, that.numberOfReviews) &&
-                Objects.equals(rating, that.rating) &&
+                Objects.equals(totalRatings, that.totalRatings) &&
                 Objects.equals(otherOptions, that.otherOptions) &&
                 Objects.equals(categories, that.categories) &&
                 Objects.equals(createdDate, that.createdDate) &&
-                Objects.equals(modifiedDate, that.modifiedDate); /*&&
-                Objects.equals(sellerList, that.sellerList);*/
+                Objects.equals(modifiedDate, that.modifiedDate);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, siteName, searchText, shortDescription, longDescription,
-                price, unit, numberOfReviews, rating, otherOptions, categories,
-                statusId, createdDate, modifiedDate);//, sellerList);
+                price, unit, numberOfReviews, totalRatings, otherOptions, categories,
+                statusId, createdDate, modifiedDate);
     }
 
     @Override
     public String toString() {
-        return "ProductSearchResult{" +
-                "id=" + id +
-                ", siteName='" + siteName + '\'' +
-                ", searchText='" + searchText + '\'' +
-                ", shortDescription='" + shortDescription + '\'' +
-                ", longDescription='" + longDescription + '\'' +
-                ", price='" + price + '\'' +
-                ", unit='" + unit + '\'' +
-                ", numberOfReviews='" + numberOfReviews + '\'' +
-                ", rating='" + rating + '\'' +
-                ", otherOptions='" + otherOptions + '\'' +
-                ", categories='" + categories + '\'' +
-                ", statusId=" + statusId +
-                ", createdDate=" + createdDate +
-                ", modifiedDate=" + modifiedDate +
-                //", sellerList=" + sellerList +
-                '}';
+        return String.format(TO_STRING_FORMAT, id, siteName, searchText, shortDescription, longDescription, price, unit,
+                numberOfReviews, totalRatings, otherOptions, categories, statusId, createdDate, modifiedDate);
     }
 }

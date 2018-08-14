@@ -21,7 +21,8 @@ import java.util.Objects;
 @Entity
 @Table(name = "SearchText")
 public class SearchText {
-    private static final Logger LOG = LoggerFactory.getLogger(SearchText.class);
+    private static final String TO_STRING_FORMAT =
+            "SearchText[id=%s, searchText='%s', statusId=%s, createdDate=%s, modifiedDate=%s]";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -101,12 +102,6 @@ public class SearchText {
 
     @Override
     public String toString() {
-        return "SearchText{" +
-                "id=" + id +
-                ", searchText='" + searchText + '\'' +
-                ", statusId=" + statusId +
-                ", createdDate=" + createdDate +
-                ", modifiedDate=" + modifiedDate +
-                '}';
+        return String.format(TO_STRING_FORMAT, id, searchText, statusId, createdDate, modifiedDate);
     }
 }

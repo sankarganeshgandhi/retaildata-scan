@@ -150,7 +150,7 @@ public class RetailDataScanner {
             Elements divRatingTags = spanRatingTags.select("div.vq3ore");
             Element divRatingTag = divRatingTags.first();
             Attributes attributes = divRatingTag.attributes();
-            productResult.setRating(attributes.get("aria-label"));
+            productResult.setTotalRatings(attributes.get("aria-label"));
 
             //For Product long description
             divTags = na4IcdDivTags.next().next();

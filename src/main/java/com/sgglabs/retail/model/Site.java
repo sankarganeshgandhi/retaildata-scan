@@ -24,7 +24,9 @@ import java.util.Objects;
 @Entity
 @Table(name = "Site")
 public class Site {
-    private static final Logger LOG = LoggerFactory.getLogger(Site.class);
+    private static final String TO_STRING_FORMAT =
+            "Site[id=%s, siteName='%s', siteHostName='%s', searchURL='%s', siteDescription='%s'" +
+            "statusId=%s, createDate=%s, modifiedDate=%s]";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -140,15 +142,7 @@ public class Site {
 
     @Override
     public String toString() {
-        return "Site{" +
-                "id=" + id +
-                ", siteName='" + siteName + '\'' +
-                ", siteHostName='" + siteHostName + '\'' +
-                ", searchURI='" + searchURI + '\'' +
-                ", siteDescription='" + siteDescription + '\'' +
-                ", statusId=" + statusId +
-                ", createdDate=" + createdDate +
-                ", modifiedDate=" + modifiedDate +
-                '}';
+        return String.format(TO_STRING_FORMAT, id, siteName, siteHostName, searchURI,
+                siteDescription, statusId, createdDate, modifiedDate);
     }
 }

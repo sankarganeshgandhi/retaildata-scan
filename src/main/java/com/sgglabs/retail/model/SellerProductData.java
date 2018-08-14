@@ -28,6 +28,10 @@ import java.util.Objects;
 @Entity
 @Table(name = "SellerProductData")
 public class SellerProductData {
+    private static final String TO_STRING_FORMAT =
+            "SellerProductData[id=%s, prodSearchResultId=%s, sellerName='%s', ratingIndex='%s', totalRatings='%s', " +
+                    "details='%s', basePrice='%s', totalPrice='%s', statusId=%s, createdDate=%s, modifiedDate=%s]";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -39,7 +43,7 @@ public class SellerProductData {
     private String ratingIndex;
 
     @Column(name = "TotalRatings")
-    private String numberOfRatings;
+    private String totalRatings;
 
     @Column(name = "Details")
     private String details;
@@ -50,10 +54,6 @@ public class SellerProductData {
     @Column(name = "TotalPrice")
     private String totalPrice;
 
-    /*
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ProdSearchResultId", nullable = false)
-    */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ProdSearchResultId", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -95,12 +95,12 @@ public class SellerProductData {
         this.ratingIndex = ratingIndex;
     }
 
-    public String getNumberOfRatings() {
-        return numberOfRatings;
+    public String getTotalRatings() {
+        return totalRatings;
     }
 
-    public void setNumberOfRatings(String numberOfRatings) {
-        this.numberOfRatings = numberOfRatings;
+    public void setTotalRatings(String numberOfRatings) {
+        this.totalRatings = numberOfRatings;
     }
 
     public String getDetails() {
@@ -168,7 +168,7 @@ public class SellerProductData {
                 statusId == that.statusId &&
                 Objects.equals(sellerName, that.sellerName) &&
                 Objects.equals(ratingIndex, that.ratingIndex) &&
-                Objects.equals(numberOfRatings, that.numberOfRatings) &&
+                Objects.equals(totalRatings, that.totalRatings) &&
                 Objects.equals(details, that.details) &&
                 Objects.equals(basePrice, that.basePrice) &&
                 Objects.equals(totalPrice, that.totalPrice) &&
@@ -179,24 +179,13 @@ public class SellerProductData {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, sellerName, ratingIndex, numberOfRatings, details,
+        return Objects.hash(id, sellerName, ratingIndex, totalRatings, details,
                 basePrice, totalPrice, productSearchResult, statusId, createdDate, modifiedDate);
     }
 
     @Override
     public String toString() {
-        return "SellerProductData{" +
-                "id=" + id +
-                ", sellerName='" + sellerName + '\'' +
-                ", ratingIndex='" + ratingIndex + '\'' +
-                ", numberOfRatings='" + numberOfRatings + '\'' +
-                ", details='" + details + '\'' +
-                ", basePrice='" + basePrice + '\'' +
-                ", totalPrice='" + totalPrice + '\'' +
-                ", productSearchResult=" + productSearchResult +
-                ", statusId=" + statusId +
-                ", createdDate=" + createdDate +
-                ", modifiedDate=" + modifiedDate +
-                '}';
+        return String.format(TO_STRING_FORMAT, id, productSearchResult.getId(), sellerName, ratingIndex, totalRatings,
+                details, basePrice, totalPrice, statusId, createdDate, modifiedDate);
     }
 }
