@@ -1,6 +1,6 @@
 package com.sgglabs.retail;
 
-import com.sgglabs.retail.model.Status;
+import com.sgglabs.retail.model.entity.Status;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package com.sgglabs.retail;
 
-import com.sgglabs.retail.model.SearchText;
+import com.sgglabs.retail.model.entity.SearchText;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

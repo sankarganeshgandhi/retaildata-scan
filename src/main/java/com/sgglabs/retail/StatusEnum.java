@@ -13,4 +13,14 @@ public enum StatusEnum {
     public int getValue() {
         return this.enumValue;
     }
+
+    public String getString() {
+        String status = null;
+        if (enumValue == 1) {
+            status = "Inactive";
+        } else if (enumValue == 2) {
+            status = "Active";
+        }
+        return status;
+    }
 }

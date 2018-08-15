@@ -1,6 +1,9 @@
 package com.sgglabs.retail;
 
-import com.sgglabs.retail.model.*;
+import com.sgglabs.retail.model.dto.ProductSearchResultDTO;
+import com.sgglabs.retail.model.dto.SellerProductDataDTO;
+import com.sgglabs.retail.model.entity.SearchText;
+import com.sgglabs.retail.model.entity.Site;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
@@ -86,12 +89,6 @@ public class RetailDataScanner {
     @Autowired
     private SiteRepository siteRepo;
 
-    @Autowired
-    private ProductSearchResultRepository prodSearchResultRepo;
-
-    @Autowired
-    private SellerProductDataRepository sellerDataRepo;
-
     public RetailDataScanner() {
     }
 
@@ -105,7 +102,7 @@ public class RetailDataScanner {
             SearchInfo searchInfo = searchList.get(0);
             Document resultPageDoc = Jsoup.connect(searchInfo.getFullURL()).get();
 
-            ProductSearchResult productResult = new ProductSearchResult();
+            ProductSearchResultDTO productResult = new ProductSearchResultDTO();
             productResult.setSiteName(searchInfo.getSiteName());
             productResult.setSearchText(searchInfo.getSearchText());
 
@@ -186,15 +183,13 @@ public class RetailDataScanner {
              */
 
             //productResult.getSellerList().addAll(sellerDataList);
-            productResult.setStatusId(StatusEnum.Active.getValue());
-            prodSearchResultRepo.save(productResult);
+            productResult.setStatus(StatusEnum.Active.getString());
 
             // After clicking on the result URI
-            List<SellerProductData> sellerDataList = getProductSellerData(
-                    searchInfo.getHostName() + aHrefValue, productResult);
-            for (SellerProductData sellerData: sellerDataList) {
-                sellerDataRepo.save(sellerData);
-            }
+            List<SellerProductDataDTO> sellerDataList = getProductSellerData(
+                    searchInfo.getHostName() + aHrefValue);
+
+            productResult.setSellerDataList(sellerDataList);
         } catch (Exception ex) {
             LOG.error("unable to fetch data", ex);
         }
@@ -244,8 +239,7 @@ public class RetailDataScanner {
         return doc;
     }
 
-    private List<SellerProductData> getProductSellerData(final String productDetailsPageURL,
-                                    ProductSearchResult productSearchResult) throws IOException {
+    private List<SellerProductDataDTO> getProductSellerData(final String productDetailsPageURL) throws IOException {
         // After clicking on the result URI
         Document prodDetailPageDoc = Jsoup.connect(productDetailsPageURL).get();
 
@@ -257,19 +251,18 @@ public class RetailDataScanner {
                 .select("tbody")
                 .select("tr");
 
-        List<SellerProductData> sellerProductDataList = new ArrayList<>();
+        List<SellerProductDataDTO> sellerProductDataList = new ArrayList<>();
         for (int i = 1; i < productRetailStoreTableRowTags.size(); i++) { //first row is the col names so skip it.
             Element row = productRetailStoreTableRowTags.get(i);
             Elements cols = row.children();
             if (cols.size() >= 6) {
-                SellerProductData sellerData = new SellerProductData();
+                SellerProductDataDTO sellerData = new SellerProductDataDTO();
                 sellerData.setSellerName(cols.get(0).text());
                 sellerData.setRatingIndex(cols.get(1).text());
                 sellerData.setDetails(cols.get(2).text());
                 sellerData.setBasePrice(cols.get(3).text());
                 sellerData.setTotalPrice(cols.get(4).text());
-                sellerData.setProductSearchResult(productSearchResult);
-                sellerData.setStatusId(StatusEnum.Active.getValue());
+                sellerData.setStatus(StatusEnum.Active.getString());
                 sellerProductDataList.add(sellerData);
             } else {
                 LOG.warn("skipped row: " + row.text());
