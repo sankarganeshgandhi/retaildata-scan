@@ -1,2 +1,2 @@
-# retaildatascan
+# retaildata-scan
 Scan the retail data
