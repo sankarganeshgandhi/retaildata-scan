@@ -68,15 +68,10 @@ public class MessagePostService {
         String jsonOfProductResult = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            jsonOfProductResult = mapper.writeValueAsString(searchResultDTO);
+            jsonOfProductResult = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(searchResultDTO);
 
-            MultiValueMap<String, String> requestBodyMap = new LinkedMultiValueMap<String, String>();
-            requestBodyMap.add("productSearchResult", jsonOfProductResult);
-
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(requestBodyMap, httpHeaders);
-            ResponseEntity<String> response = restTemplate.postForEntity(MQ_MSG_REST_API_URL,
-                    request, String.class, paramsMap);
-            LOG.debug(response.getStatusCode().toString() + ":::" + response.getStatusCodeValue());
+            HttpEntity<?> request = new HttpEntity<>(jsonOfProductResult, httpHeaders);
+            restTemplate.postForEntity(MQ_MSG_REST_API_URL, request, String.class, paramsMap);
         } catch (JsonProcessingException jpe) {
             LOG.error(jpe.getMessage(), jpe);
             throw jpe;
