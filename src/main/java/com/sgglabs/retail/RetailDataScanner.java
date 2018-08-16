@@ -1,5 +1,6 @@
 package com.sgglabs.retail;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sgglabs.retail.model.dto.ProductSearchResultDTO;
 import com.sgglabs.retail.model.dto.SellerProductDataDTO;
 import com.sgglabs.retail.model.entity.SearchText;
@@ -32,43 +33,43 @@ public class RetailDataScanner {
         private String searchURI;
         private String fullURL;
 
-        public String getSiteName() {
+        String getSiteName() {
             return siteName;
         }
 
-        public void setSiteName(String siteName) {
+        void setSiteName(String siteName) {
             this.siteName = siteName;
         }
 
-        public String getHostName() {
+        String getHostName() {
             return hostName;
         }
 
-        public void setHostName(String hostName) {
+        void setHostName(String hostName) {
             this.hostName = hostName;
         }
 
-        public String getSearchText() {
+        String getSearchText() {
             return searchText;
         }
 
-        public void setSearchText(String searchText) {
+        void setSearchText(String searchText) {
             this.searchText = searchText;
         }
 
-        public String getSearchURI() {
+        String getSearchURI() {
             return searchURI;
         }
 
-        public void setSearchURI(String searchURI) {
+        void setSearchURI(String searchURI) {
             this.searchURI = searchURI;
         }
 
-        public String getFullURL() {
+        String getFullURL() {
             return fullURL;
         }
 
-        public void setFullURL(String fullURL) {
+        void setFullURL(String fullURL) {
             this.fullURL = fullURL;
         }
 
@@ -89,10 +90,13 @@ public class RetailDataScanner {
     @Autowired
     private SiteRepository siteRepo;
 
+    @Autowired
+    MessagePostService messageService;
+
     public RetailDataScanner() {
     }
 
-    public void startScanning() {
+    void startScanning() {
         List<SearchInfo> searchList = getSearchList();
         fetchRetailData(searchList);
     }
@@ -190,6 +194,8 @@ public class RetailDataScanner {
                     searchInfo.getHostName() + aHrefValue);
 
             productResult.setSellerDataList(sellerDataList);
+
+            messageService.sendSearchResultMessage(productResult);
         } catch (Exception ex) {
             LOG.error("unable to fetch data", ex);
         }
