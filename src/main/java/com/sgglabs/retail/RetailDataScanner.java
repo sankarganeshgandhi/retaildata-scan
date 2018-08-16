@@ -1,5 +1,6 @@
 package com.sgglabs.retail;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sgglabs.retail.model.dto.ProductSearchResultDTO;
 import com.sgglabs.retail.model.dto.SellerProductDataDTO;
@@ -196,8 +197,10 @@ public class RetailDataScanner {
             productResult.setSellerDataList(sellerDataList);
 
             messageService.sendSearchResultMessage(productResult);
-        } catch (Exception ex) {
-            LOG.error("unable to fetch data", ex);
+        } catch (JsonProcessingException me) {
+            LOG.error("unable to post the data as message to store", me);
+        } catch (IOException ioe) {
+            LOG.error("unable to fetch data", ioe);
         }
     }
 
