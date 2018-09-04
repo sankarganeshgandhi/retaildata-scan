@@ -23,7 +23,7 @@
     <repositories>
         <repository>
             <id>localRepository</id>
-            <url>file://D:/HM/Applications/Apache/maven/build-lib-repo/</url>
+            <url>file://D:/sankarg/Applications/Apache/maven/build-lib-repo/</url>
         </repository>
     </repositories>
 
