@@ -1,7 +1,6 @@
 package com.sgglabs.retail;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sgglabs.retail.model.dto.ProductSearchResultDTO;
 import com.sgglabs.retail.model.dto.SellerProductDataDTO;
 import com.sgglabs.retail.model.entity.SearchText;
@@ -85,6 +84,27 @@ public class RetailDataScanner {
         }
     }
 
+    private final static String HTML_ANCHOR_TAG = "a";
+    private final static String HTML_HREF_ATTR = "href";
+    private final static String HTML_TAG1 = "div.sh-sr__shop-result-group";
+    private final static String HTML_TAG2 = "div.sh-pr__product-results";
+    private final static String HTML_TAG3 = "div.sh-dlr__list-result";
+    private final static String HTML_TAG4 = "div.sh-dlr__content";
+    private final static String HTML_TAG5 = "div.ZGFjDb";
+    private final static String HTML_TAG6 = "div.eIuuYe";
+    private final static String HTML_TAG7 = "div.na4ICd";
+    private final static String HTML_TAG8 ="span.o0Xcvc";
+    private final static String HTML_TAG9 = "div.vq3ore";
+    private final static String HTML_ATTR1 = "aria-label";
+    private final static String HTML_TAG10 = "main-content-with-search";
+    private final static String HTML_TAG11 = "pp-main";
+    private final static String HTML_TAG12 = "online";
+    private final static String HTML_TAG13 = "os-content";
+    private final static String HTML_TAG14 = "os-sellers-content";
+    private final static String HTML_TAG15 = "table.os-main-table";
+    private final static String HTML_TAG16 = "tbody";
+    private final static String HTML_TAG17 = "tr";
+
     @Autowired
     private SearchTextRepository searchTextRepo;
 
@@ -92,7 +112,7 @@ public class RetailDataScanner {
     private SiteRepository siteRepo;
 
     @Autowired
-    MessagePostService messageService;
+    private MessagePostService messageService;
 
     public RetailDataScanner() {
     }
@@ -119,27 +139,32 @@ public class RetailDataScanner {
              *                  div.ZGFjDb
              */
             // ("div.sh-sr__shop-result-group").("div.sh-pr__product-results")
-            Elements prodSearchResultsTag = resultPageDoc.select("div.sh-sr__shop-result-group")
-                    .select("div.sh-pr__product-results");
+            //"div.sh-sr__shop-result-group";"div.sh-pr__product-results";
+            Elements prodSearchResultsTag = resultPageDoc.select(HTML_TAG1)
+                    .select(HTML_TAG2);
 
             // ("div.sh-dlr__list-result")
-            Elements prodSearchResultTag = prodSearchResultsTag.select("div.sh-dlr__list-result");
+            Elements prodSearchResultTag = prodSearchResultsTag.select(HTML_TAG3);
 
             // ("div.sh-dlr__content")
-            Elements prodSearchResultContentTag = prodSearchResultTag.select("div.sh-dlr__content");
+            Elements prodSearchResultContentTag = prodSearchResultTag.select(HTML_TAG4);
 
             // ("div.ZGFjDb")
-            Elements divProductResultTags = prodSearchResultContentTag.select("div.ZGFjDb");
+            Elements divProductResultTags = prodSearchResultContentTag.select(HTML_TAG5);
 
             // For Product short description
-            Elements productNameTags = divProductResultTags.select("div.eIuuYe");
-            String aHrefValue = productNameTags.select("a").attr("href");
+            //"div.eIuuYe"
+            Elements productNameTags = divProductResultTags.select(HTML_TAG6);
+
+            //"a"; "href"
+            String aHrefValue = productNameTags.select(HTML_ANCHOR_TAG).attr(HTML_HREF_ATTR);
 
             Element productNameTag = productNameTags.first();
             productResult.setShortDescription(productNameTag.text());
 
             //For Product Price
-            Elements na4IcdDivTags = prodSearchResultsTag.select("div.na4ICd");
+            //"div.na4ICd"
+            Elements na4IcdDivTags = prodSearchResultsTag.select(HTML_TAG7);
             Element productPriceTag = na4IcdDivTags.first();
             productResult.setPrice(productPriceTag.text());
 
@@ -148,11 +173,15 @@ public class RetailDataScanner {
             Element productReviewTag = divTags.first();
             productResult.setNumberOfReviews(productReviewTag.text());
 
-            Elements spanRatingTags = productReviewTag.select("span.o0Xcvc");
-            Elements divRatingTags = spanRatingTags.select("div.vq3ore");
+            //"span.o0Xcvc";
+            Elements spanRatingTags = productReviewTag.select(HTML_TAG8);
+
+            //"div.vq3ore"
+            Elements divRatingTags = spanRatingTags.select(HTML_TAG9);
             Element divRatingTag = divRatingTags.first();
             Attributes attributes = divRatingTag.attributes();
-            productResult.setTotalRatings(attributes.get("aria-label"));
+            //"aria-label";
+            productResult.setTotalRatings(attributes.get(HTML_ATTR1));
 
             //For Product long description
             divTags = na4IcdDivTags.next().next();
@@ -184,7 +213,6 @@ public class RetailDataScanner {
              *                                  td
              *                                  td
              *                                  td
-             *
              */
 
             //productResult.getSellerList().addAll(sellerDataList);
@@ -252,13 +280,15 @@ public class RetailDataScanner {
         // After clicking on the result URI
         Document prodDetailPageDoc = Jsoup.connect(productDetailsPageURL).get();
 
-        Elements productRetailStoreTableRowTags = prodDetailPageDoc.getElementById("main-content-with-search")
-                .getElementById("pp-main")
-                .getElementById("online").getElementById("os-content")
-                .getElementById("os-sellers-content")
-                .select("table.os-main-table")
-                .select("tbody")
-                .select("tr");
+        //"main-content-with-search";"pp-main";"online";"os-content";"os-sellers-content"; "table.os-main-table";
+        // "tbody";"tr"
+        Elements productRetailStoreTableRowTags = prodDetailPageDoc.getElementById(HTML_TAG10)
+                .getElementById(HTML_TAG11)
+                .getElementById(HTML_TAG12).getElementById(HTML_TAG13)
+                .getElementById(HTML_TAG14)
+                .select(HTML_TAG15)
+                .select(HTML_TAG16)
+                .select(HTML_TAG17);
 
         List<SellerProductDataDTO> sellerProductDataList = new ArrayList<>();
         for (int i = 1; i < productRetailStoreTableRowTags.size(); i++) { //first row is the col names so skip it.
