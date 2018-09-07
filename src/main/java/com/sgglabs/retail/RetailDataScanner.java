@@ -127,11 +127,7 @@ public class RetailDataScanner {
             SearchInfo searchInfo = searchList.get(0);
             Document resultPageDoc = Jsoup.connect(searchInfo.getFullURL()).get();
 
-            ProductSearchResultDTO productResult = new ProductSearchResultDTO();
-            productResult.setSiteName(searchInfo.getSiteName());
-            productResult.setSearchText(searchInfo.getSearchText());
-
-            /*
+            /* div.query:<searchtext>
              * div.sh-sr__shop-result-group
              *      div.sh-pr__product-results
              *          div.sh-dlr__list-result
@@ -139,92 +135,84 @@ public class RetailDataScanner {
              *                  div.ZGFjDb
              */
             // ("div.sh-sr__shop-result-group").("div.sh-pr__product-results")
-            //"div.sh-sr__shop-result-group";"div.sh-pr__product-results";
-            Elements prodSearchResultsTag = resultPageDoc.select(HTML_TAG1)
-                    .select(HTML_TAG2);
+            Elements prodSearchResultsTag = resultPageDoc.select(HTML_TAG1).select(HTML_TAG2);
 
-            // ("div.sh-dlr__list-result")
-            Elements prodSearchResultTag = prodSearchResultsTag.select(HTML_TAG3);
-
-            // ("div.sh-dlr__content")
-            Elements prodSearchResultContentTag = prodSearchResultTag.select(HTML_TAG4);
-
-            // ("div.ZGFjDb")
-            Elements divProductResultTags = prodSearchResultContentTag.select(HTML_TAG5);
-
-            // For Product short description
-            //"div.eIuuYe"
-            Elements productNameTags = divProductResultTags.select(HTML_TAG6);
-
-            //"a"; "href"
-            String aHrefValue = productNameTags.select(HTML_ANCHOR_TAG).attr(HTML_HREF_ATTR);
-
-            Element productNameTag = productNameTags.first();
-            productResult.setShortDescription(productNameTag.text());
-
-            //For Product Price
-            //"div.na4ICd"
-            Elements na4IcdDivTags = prodSearchResultsTag.select(HTML_TAG7);
-            Element productPriceTag = na4IcdDivTags.first();
-            productResult.setPrice(productPriceTag.text());
-
-            //For Product Reviews and Ratings
-            Elements divTags = na4IcdDivTags.next();
-            Element productReviewTag = divTags.first();
-            productResult.setNumberOfReviews(productReviewTag.text());
-
-            //"span.o0Xcvc";
-            Elements spanRatingTags = productReviewTag.select(HTML_TAG8);
-
-            //"div.vq3ore"
-            Elements divRatingTags = spanRatingTags.select(HTML_TAG9);
-            Element divRatingTag = divRatingTags.first();
-            Attributes attributes = divRatingTag.attributes();
-            //"aria-label";
-            productResult.setTotalRatings(attributes.get(HTML_ATTR1));
-
-            //For Product long description
-            divTags = na4IcdDivTags.next().next();
-            Element prodLongDescTag = divTags.first();
-            productResult.setLongDescription(prodLongDescTag.text());
-
-            // For Product Categories
-            divTags = na4IcdDivTags.next().next().next();
-            Element prodCategoriesTag = divTags.first();
-            productResult.setCategories(prodCategoriesTag.text());
-
-            // For Product Other Options
-            divTags = na4IcdDivTags.next().next().next().next();
-            Element prodOtherOptionsTag = divTags.first();
-            productResult.setOtherOptions(prodOtherOptionsTag.text());
-
-            /*
-             * div.id: main-content-with-search
-             *      div.id: pp-main
-             *          div.id: online
-             *              div.id: os-content
-             *                  div.id: os-sellers-content
-             *                      table.os-main-table
-             *                          tbody
-             *                              tr.os-row
-             *                                  td
-             *                                  td
-             *                                  td
-             *                                  td
-             *                                  td
-             *                                  td
+            /**
+             * Loop through each of the "div.sh-dlr__list-result" tag to scan through the search results
              */
+            // ("div.sh-dlr__list-result")
+            Elements prodSearchResultTags = prodSearchResultsTag.select(HTML_TAG3);
+            for (int i = 1; i < prodSearchResultTags.size(); i++) {
+                ProductSearchResultDTO productSearchResult = new ProductSearchResultDTO();
+                productSearchResult.setSiteName(searchInfo.getSiteName());
+                productSearchResult.setSearchText(searchInfo.getSearchText());
 
-            //productResult.getSellerList().addAll(sellerDataList);
-            productResult.setStatus(StatusEnum.Active.getString());
+                Element productSearchResultRow = prodSearchResultTags.get(i);
 
-            // After clicking on the result URI
-            List<SellerProductDataDTO> sellerDataList = getProductSellerData(
-                    searchInfo.getHostName() + aHrefValue);
+                // ("div.sh-dlr__content")
+                Elements prodSearchResultContentTag = productSearchResultRow.select(HTML_TAG4);
 
-            productResult.setSellerDataList(sellerDataList);
+                // ("div.ZGFjDb")
+                Elements divProductResultTags = prodSearchResultContentTag.select(HTML_TAG5);
 
-            messageService.sendSearchResultMessage(productResult);
+                // For Product short description
+                //"div.eIuuYe"
+                Elements productNameTags = divProductResultTags.select(HTML_TAG6);
+
+                //"a"; "href"
+                String aHrefValue = productNameTags.select(HTML_ANCHOR_TAG).attr(HTML_HREF_ATTR);
+
+                Element productNameTag = productNameTags.first();
+                productSearchResult.setShortDescription(productNameTag.text());
+
+                //For Product Price
+                //"div.na4ICd"
+                Elements na4IcdDivTags = prodSearchResultsTag.select(HTML_TAG7);
+                Element productPriceTag = na4IcdDivTags.first();
+                productSearchResult.setPrice(productPriceTag.text());
+
+                if (!productSearchResult.getPrice().contains("shops")) continue;
+
+                //For Product Reviews and Ratings
+                Elements divTags = na4IcdDivTags.next();
+                Element productReviewTag = divTags.first();
+                productSearchResult.setNumberOfReviews(productReviewTag.text());
+
+                //"span.o0Xcvc";
+                Elements spanRatingTags = productReviewTag.select(HTML_TAG8);
+
+                //"div.vq3ore"
+                Elements divRatingTags = spanRatingTags.select(HTML_TAG9);
+                Element divRatingTag = divRatingTags.first();
+                Attributes attributes = divRatingTag.attributes();
+                //"aria-label";
+                productSearchResult.setTotalRatings(attributes.get(HTML_ATTR1));
+
+                //For Product long description
+                divTags = na4IcdDivTags.next().next();
+                Element prodLongDescTag = divTags.first();
+                productSearchResult.setLongDescription(prodLongDescTag.text());
+
+                // For Product Categories
+                divTags = na4IcdDivTags.next().next().next();
+                Element prodCategoriesTag = divTags.first();
+                productSearchResult.setCategories(prodCategoriesTag.text());
+
+                // For Product Other Options
+                divTags = na4IcdDivTags.next().next().next().next();
+                Element prodOtherOptionsTag = divTags.first();
+                productSearchResult.setOtherOptions(prodOtherOptionsTag.text());
+
+                //productResult.getSellerList().addAll(sellerDataList);
+                productSearchResult.setStatus(StatusEnum.Active.getString());
+
+                // After clicking on the result URI
+                List<SellerProductDataDTO> sellerDataList = getProductSellerData(
+                        searchInfo.getHostName() + aHrefValue);
+
+                productSearchResult.setSellerDataList(sellerDataList);
+                messageService.sendSearchResultMessage(productSearchResult);
+            }
         } catch (JsonProcessingException me) {
             LOG.error("unable to post the data as message to store", me);
         } catch (IOException ioe) {
